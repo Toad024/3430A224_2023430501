@@ -49,4 +49,4 @@ int main() {
     cout << "Height: " << patients[e].height << "Meters \n";
 
     cout << "\n";
-  }
+  }}
