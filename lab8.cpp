@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 
     // Verifying that two arguments are provided: number of elements and "YES" (or anything else)
     if (argc < 3) {
-        cout << "Usage: " << argv[0] << " <number_of_elements> <(Show Arrays?) YES/NO)>" << endl;   
+        cout << "Usage: " << argv[0] << " <number_of_elements> <(Show Arrays?) YES/NO>" << endl;   
         return 1;
     }
 
