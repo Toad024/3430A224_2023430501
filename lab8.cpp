@@ -70,14 +70,14 @@ void quickSort(int A[], int N) {
 
 int main(int argc, char *argv[]) {
 
-    // Verifying that two arguments are provided: number of elements and "Show" or "Hide"
+    // Verifying that two arguments are provided: number of elements and "YES" (or anything else)
     if (argc < 3) {
-        cout << "Usage: " << argv[0] << " <number_of_elements> <YES/NO>" << endl;   
+        cout << "Usage: " << argv[0] << " <number_of_elements> <(Show Arrays?) YES/NO)>" << endl;   
         return 1;
     }
 
     int N = atoi(argv[1]); // First argument: number of elements
-    bool showArray = string(argv[2]) == "YES"; // Second argument: "Show" or "Hide" to display or not display the arrays
+    bool showArray = string(argv[2]) == "YES"; // Second argument: "YES" or ""Anything"" to display or not display the arrays
 
     int A[N];
 
