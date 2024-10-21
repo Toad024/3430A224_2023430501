@@ -6,6 +6,7 @@ Description
 
 This program implements two sorting methods: Selection and QuickSort. It allows the user to input a specific number of elements into an array if they are lower than 20, which are then sorted using both methods. 
 If the user chooses more than 20 elements, the program will automatically generate random numbers to fill the array.
+The user also can choose if the arrays are showed or not, to see just the time it took them to sort.
 
 Features
 
@@ -19,8 +20,9 @@ Usage
 
 Compile the program with a compatible C++ compiler.
 Run the program.
-Enter the number of elements you want in the array.
-If you enter more than 20, random numbers will be generated automatically; otherwise, you will be prompted to input each number manually.
+Write in the consol: "./Program_Name 'space' " <number_of_elements> 'space' <YES/NO>
+Enter the number of elements you want in the array and if you want or not to see the arrays.
+If you enter more than 20 elements, random numbers will be generated automatically; otherwise, you will be prompted to input each number manually.
 Observe the output of the original and sorted arrays, along with the time taken by each algorithm.
 
 Example Output
