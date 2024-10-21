@@ -68,50 +68,65 @@ void quickSort(int A[], int N) {
             PILAMAYOR[TOPE] = FIN;
         }}}
 
-int main() {
-    int N;
+int main(int argc, char *argv[]) {
 
-    cout << "How many elements have your array?: ";
-    cin >> N;
+    // Verifying that two arguments are provided: number of elements and "Show" or "Hide"
+    if (argc < 3) {
+        cout << "Usage: " << argv[0] << " <number_of_elements> <YES/NO>" << endl;   
+        return 1;
+    }
+
+    int N = atoi(argv[1]); // First argument: number of elements
+    bool showArray = string(argv[2]) == "YES"; // Second argument: "Show" or "Hide" to display or not display the arrays
 
     int A[N];
 
-    if (N > 20){ //If the number inserted is higher than 20 then the content of the array will be random
+    if (N > 20) { // If number of elements is greater than 20, fill the array with random numbers
         for (int i = 0; i < N; i++) {
-            A[i] = rand() % 10000 + 1; //Random numbers between 10000 and 1
-    }
-    cout << "\n ** Array generated automatically ** \n \n";
-    } else {
-        for (int i = 0; i < N; i++){ //If the number inserted is lower than 20 the user will have to insert them one by one
+            A[i] = rand() % 10000 + 1; // Random numbers between 1 and 10000
+        }
+        cout << "\n ** Array generated automatically ** \n \n";
+    } else { // If number of elements is 20 or less, ask the user to input them manually
+        for (int i = 0; i < N; i++) {
             cout << "Insert the number '" << i+1 << "' of the array: \n";
             cin >> A[i];
         }}
 
-    cout << "___________________________________________________\n";
-    cout << "               Original Array: \n";
-    cout << "___________________________________________________\n";
-    printArray(A, N);
+    // Check if user wants to display the array
+    if (showArray) {
+        cout << "___________________________________________________\n";
+        cout << "               Original Array: \n";
+        cout << "___________________________________________________\n";
+        printArray(A, N);
+    }
 
-    auto startsel = std::chrono::high_resolution_clock::now(); //Start Selection Method with its respective timer
-    selection(A, N); //With this the selection is made
+    auto startsel = std::chrono::high_resolution_clock::now(); // Start timer for Selection Sort
+    selection(A, N); // Perform Selection Sort
     auto endsel = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> durationsel = (endsel-startsel);
+    std::chrono::duration<double> durationsel = (endsel - startsel);
 
-    cout << "\n___________________________________________________\n";
-    cout << "           Array in order of Selection: \n"; //Print of the array in Selection sort and the time it took
-    cout << "___________________________________________________\n";
-    printArray(A, N);
-    std::cout << "\n *** Selection Mehtod finished in: " << durationsel.count() * 1000 << " milliseconds \n"<< std::endl;
+    // If "Show" is passed as argument, print the sorted array by Selection Sort
+    if (showArray) {
+        cout << "\n___________________________________________________\n";
+        cout << "           Array in order of Selection: \n";
+        cout << "___________________________________________________\n";
+        printArray(A, N);
+    }
+    std::cout << "\n *** Selection Method finished in: " << durationsel.count() * 1000 << " milliseconds \n"<< std::endl;
 
-    auto startqs = std::chrono::high_resolution_clock::now(); //Start Selection Method with its respective timer
-    quickSort(A, N);
+    auto startqs = std::chrono::high_resolution_clock::now(); // Start timer for QuickSort
+    quickSort(A, N); // Perform QuickSort
     auto endqs = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> durationqs = (endqs-startqs);
+    std::chrono::duration<double> durationqs = (endqs - startqs);
 
-    cout << "___________________________________________________\n";
-    cout << "           Array in order of QuickSort: \n";
-    cout << "___________________________________________________\n";
-    printArray(A, N);
+    // If "Show" is passed as argument, print the sorted array by QuickSort
+    if (showArray) {
+        cout << "___________________________________________________\n";
+        cout << "           Array in order of QuickSort: \n";
+        cout << "___________________________________________________\n";
+        printArray(A, N);
+    }
     std::cout << "\n *** QuickSort Method finished in: " << durationqs.count() * 1000 << " milliseconds \n"<< std::endl;
+    
     return 0;
 }
