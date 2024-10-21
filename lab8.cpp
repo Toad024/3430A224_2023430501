@@ -23,36 +23,35 @@ void printArray(int A[], int N) { //Function to print all the Array
     cout << endl;
 }
 
-
 void reduce(int A[], int INI, int FIN, int &POS) {
     int IZQ = INI, DER = FIN;
     POS = INI;
     bool BAND = true;
     
-    while (BAND) {
+    while (BAND) { 
         while (A[POS] <= A[DER] && POS != DER) DER--;
-        if (POS == DER) BAND = false;
-        else {
+        if (POS == DER) BAND = false; //If POS get to DER it means that there is no more elements to move and the loop is finished
+        else { //Or the element of POS is changed with the one in DER
             swap(A[POS], A[DER]);
             POS = DER;
         }
 
-        while (A[POS] >= A[IZQ] && POS != IZQ) IZQ++;
-        if (POS == IZQ) BAND = false;
+        while (A[POS] >= A[IZQ] && POS != IZQ) IZQ++; //The same as above but this time with IZQ looking for the higher
+        if (POS == IZQ) BAND = false; //If there is no other element higher then BAND will be 'FALSO' which means that the loop will be over.
         else {
             swap(A[POS], A[IZQ]);
             POS = IZQ;
         }}}
 
 void quickSort(int A[], int N) {
-    int PILAMENOR[N], PILAMAYOR[N];
-    int TOPE = 1;
+    int PILAMENOR[N], PILAMAYOR[N]; //Stacks to save the 'limits' of the array
+    int TOPE = 1;  //To set the actual position of the stacks
     PILAMENOR[TOPE] = 0;
     PILAMAYOR[TOPE] = N - 1;
 
     while (TOPE > 0) {
-        int INI = PILAMENOR[TOPE];
-        int FIN = PILAMAYOR[TOPE];
+        int INI = PILAMENOR[TOPE]; //Initial index
+        int FIN = PILAMAYOR[TOPE]; //Final index
         TOPE--;
 
         int POS;
@@ -83,7 +82,7 @@ int main() {
     }
     cout << "\n ** Array generated automatically ** \n \n";
     } else {
-        for (int i = 0; i < N; i++){
+        for (int i = 0; i < N; i++){ //If the number inserted is lower than 20 the user will have to insert them one by one
             cout << "Insert the number '" << i+1 << "' of the array: \n";
             cin >> A[i];
         }}
@@ -92,7 +91,6 @@ int main() {
     cout << "               Original Array: \n";
     cout << "___________________________________________________\n";
     printArray(A, N);
-
 
     auto startsel = std::chrono::high_resolution_clock::now(); //Start Selection Method with its respective timer
     selection(A, N); //With this the selection is made
@@ -111,7 +109,7 @@ int main() {
     std::chrono::duration<double> durationqs = (endqs-startqs);
 
     cout << "___________________________________________________\n";
-    cout << "           Array in order of QuickSort: \n"; //Print of the array in QuickSort and the time it took
+    cout << "           Array in order of QuickSort: \n";
     cout << "___________________________________________________\n";
     printArray(A, N);
     std::cout << "\n *** QuickSort Method finished in: " << durationqs.count() * 1000 << " milliseconds \n"<< std::endl;
