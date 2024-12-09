@@ -6,6 +6,67 @@
 #include <stdexcept>
 #include <fstream> 
 
+//Generación de la Alineamiento Optimo con un Archivo.dot 
+void generateDotFileAlignment(const std::string& alignedA, const std::string& alignedB, int imageCountA) {
+    std::ofstream dotFile("AlineamientoOptimo" + std::to_string(imageCountA) + ".dot");
+    if (!dotFile) {
+        std::cerr << "No se pudo crear el archivo .dot" << std::endl;
+        return;
+    }
+
+    dotFile << "graph AlineamientoOptimo {" << std::endl;
+    dotFile << "    rankdir=TB;" << std::endl;
+    dotFile << "    node [shape=box, style=filled, fontname=\"Arial\"];" << std::endl;
+    dotFile << "    label=\"Alineamiento Óptimo\";" << std::endl;
+    dotFile << "    labelloc=t;" << std::endl;
+    dotFile << "    splines=ortho;" << std::endl;
+
+    // Crear nodos para Secuencia A en la parte superior
+    dotFile << "    subgraph cluster_seqA {" << std::endl;
+    dotFile << "        label=\"Secuencia A\";" << std::endl;
+    dotFile << "        labelloc=\"t\";" << std::endl;  // Etiqueta en la parte superior del clúster
+    dotFile << "        style=filled;" << std::endl;
+    dotFile << "        color=lightblue;" << std::endl;
+    for (size_t i = 0; i < alignedA.length(); ++i) {
+        dotFile << "        A" << i << " [label=\"" << alignedA[i] << "\"];" << std::endl;
+    }
+    dotFile << "    }" << std::endl;
+
+    // Crear nodos para Secuencia B en la parte inferior
+    dotFile << "    subgraph cluster_seqB {" << std::endl;
+    dotFile << "        label=\"Secuencia B\";" << std::endl;
+    dotFile << "        labelloc=\"b\";" << std::endl;  // Etiqueta en la parte inferior del clúster
+    dotFile << "        style=filled;" << std::endl;
+    dotFile << "        color=lightgreen;" << std::endl;
+    for (size_t i = 0; i < alignedB.length(); ++i) {
+        dotFile << "        B" << i << " [label=\"" << alignedB[i] << "\"];" << std::endl;
+    }
+    dotFile << "    }" << std::endl;
+
+    // Crear conexiones entre caracteres alineados
+    for (size_t i = 0; i < alignedA.length(); ++i) {
+        if (alignedA[i] != '-' && alignedB[i] != '-') {
+            dotFile << "    A" << i << " -- B" << i << " [style=dashed];" << std::endl;
+        }}
+
+    dotFile << "}" << std::endl;
+    dotFile.close();
+}
+
+//SUBMENÚ - Opción 5: Función para generar la imagen .png del Alineamiento Optimo 
+void generatePngImageAlignment(int imageCountA) {
+    // Usamos el comando del sistema para ejecutar Graphviz y generar la imagen
+    std::string command = "dot -Tpng AlineamientoOptimo" + std::to_string(imageCountA) + ".dot -o AlineamientoOptimo" + std:: to_string(imageCountA) + ".png";
+    int result = system(command.c_str());
+
+    if (result == 0) {
+        std::cout << "\n-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-\n" << std::endl;
+        std::cout << "  * * * Imagen generada exitosamente como 'AlineamientoOptimo" << imageCountA << ".png'. * * *" << std::endl;
+        std::cout << "\n-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-\n" << std::endl;
+    } else {
+        std::cerr << "Error al generar la imagen con Graphviz." << std::endl;
+    }}
+
 //Generación de la Matriz Alineada con un Archivo.dot 
 void generateDotFileMatrix(const std::vector<std::vector<int>>& matrix, const std::vector<std::pair<int, int>>& path, int imageCountM) {
     std::ofstream dotFile("MatrizAlineada" + std::to_string(imageCountM) + ".dot");
@@ -155,7 +216,7 @@ std::vector<std::pair<int, int>> tracePath(const std::vector<std::vector<int>>& 
 }
 
 //SUBMENÚ - Opción 1: Función para reconstruir el alineamiento óptimo.
-void reconstructAlignment(const std::vector<std::vector<int>>& matrix, const std::string& seqA, const std::string& seqB, int gapPenalty) {
+std::pair<std::string, std::string> reconstructAlignment(const std::vector<std::vector<int>>& matrix, const std::string& seqA, const std::string& seqB, int gapPenalty) {
     std::string alignedA, alignedB;
     int i = seqB.length();
     int j = seqA.length();
@@ -175,13 +236,14 @@ void reconstructAlignment(const std::vector<std::vector<int>>& matrix, const std
             alignedA = seqA[j-1] + alignedA;
             alignedB = "-" + alignedB;
             --j;
-        }}
+        }
+    }
 
     //Imprimir el alineamiento óptimo de manera ordenada
     std::cout << "\n_________________________________________________\n";
     std::cout << "\n                Alineamiento óptimo:" << std::endl;
     std::cout << "_________________________________________________\n";
-    const int lineWidth = 80; // Este parámetro es del largo de las comparaciónes de las bases nitrogenadsa.
+    const int lineWidth = 80;
     size_t length = alignedA.length();
 
     for (size_t start = 0; start < length; start += lineWidth) {
@@ -190,12 +252,14 @@ void reconstructAlignment(const std::vector<std::vector<int>>& matrix, const std
 
         std::cout << "\n Secuencia A: " << segmentA;
         std::cout << "\n Secuencia B: " << segmentB;
-    }}
+    }
 
+    // Añadir este return al final
+    return std::make_pair(alignedA, alignedB);
+}
 bool imageCreated = false;
 
-//SUBMENÚ 
-//SUBMENÚ
+// S U B M E N Ú
 void subMenu(const std::vector<std::vector<int>>& matrix, const std::string& seqA, const std::string& seqB) {
     int subOption;
     static int imageCountD = 1;  //Contador estático para generar nombres únicos de imágenes
@@ -206,10 +270,12 @@ void subMenu(const std::vector<std::vector<int>>& matrix, const std::string& seq
         std::cout << "\n¿Qué acción desea realizar a continuación?: \n" << std::endl;
         std::cout << "1) Mostrar alineamiento óptimo" << std::endl;
         std::cout << "2) Destacar trazado diagonal" << std::endl;
-        std::cout << "3) Generar imagen .png de la matriz trazada" << std::endl;
-        std::cout << "4) Generar archivo .dot con la matriz" << std::endl; // Nueva opción para generar archivo .dot
-        std::cout << "5) Volver al menú principal" << std::endl;
-        std::cout << "Seleccione una opción (1-5): ";
+        std::cout << "3) Generar imagen .png de la Diagonal Trazada" << std::endl;
+        std::cout << "4) Generar imagen .png de la Matriz Alineada" << std::endl; // Nueva opción para generar archivo .dot
+        std::cout << "5) Generar imagen .png del Alineamiento Optimo" << std::endl;
+        std::cout << "6) Volver al menú principal" << std::endl;
+        std::cout <<  "\n - ¡ADVERTENCIA! Las imagenes pueden verse distorsionadas si introduces secuencias demasiado largas - \n"  << std::endl;
+        std::cout << "Seleccione una opción (1-6): ";
         std::cin >> subOption;
 
         switch (subOption) {
@@ -232,20 +298,32 @@ void subMenu(const std::vector<std::vector<int>>& matrix, const std::string& seq
                 // Crear el archivo .dot
                 std::cout << "\nGenerando archivo .dot ..." << std::endl;
                 generateDotFileDiagonal(matrix, path, imageCountD);
+                //Crear Imagen
                 generatePngImageDiagonal(imageCountD);
-                // Incrementar el contador de imágenes
                 imageCountD++;
                 break;
             }
-            case 4: { // Nueva opción para generar archivo .dot
-                // Crear archivo .dot con la matriz
+            case 4: {  //Generación de 
+                // Crear archivo .dot
                 std::cout << "\nGenerando archivo .dot ..." << std::endl;
                 generateDotFileMatrix(matrix, tracePath(matrix, seqA, seqB), imageCountM);
+                //Crear Imagen
                 generatePngImageMatrix(imageCountM);
                 imageCountM++;
                 break;
+            }
+            case 5: {
+                // Llamar a reconstructAlignment para obtener el alineamiento óptimo
+                auto [alignedA, alignedB] = reconstructAlignment(matrix, seqA, seqB, -1);
 
-            case 5:
+                // Generar archivos .dot y .png
+                std::cout << "\nGenerando archivo .dot para Alineamiento Óptimo..." << std::endl;
+                generateDotFileAlignment(alignedA, alignedB, imageCountA);
+                generatePngImageAlignment(imageCountA);
+                imageCountA++;
+                break;
+            }
+            case 6: {
                 std::cout << "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n" << std::endl;
                 std::cout << "         Volviendo al menú principal..." << std::endl;
                 std::cout << "\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n" << std::endl;
@@ -255,7 +333,7 @@ void subMenu(const std::vector<std::vector<int>>& matrix, const std::string& seq
             default:
                 std::cout << "Opción no válida. Intenta de nuevo." << std::endl;
         }
-    } while (subOption != 5);
+    } while (subOption != 6);
 }
 
 //Función principal para gestionar alineamientos
@@ -343,6 +421,7 @@ void openSequences() {
         //Ingreso de la secuencia B
         std::cout << "\n_______________________________________________\n";
         std::cout << "Ingresa la ruta del archivo para la Secuencia B: ";
+        std::cout << "\n_______________________________________________\n";
         std::cin >> fileB;
         seqB = readSequenceFromFile(fileB);
 
@@ -362,12 +441,12 @@ int main() {
         std::cout << "_______________________________________________\n";
         std::cout << "\n                 Menú Principal:\n";
         std::cout << "_______________________________________________\n";
-        std::cout << "1) Secuencias de ejemplo\n";
-        std::cout << "2) Escribir secuencias\n";
-        std::cout << "3) Abrir secuencias\n";
-        std::cout << "4) Explicar algoritmo\n";
-        std::cout << "5) About\n";
-        std::cout << "6) Salir\n";
+        std::cout << "1) Secuencias de ejemplo" << std::endl;
+        std::cout << "2) Escribir secuencias" << std::endl;
+        std::cout << "3) Abrir secuencias" << std::endl;
+        std::cout << "4) Explicar algoritmo" << std::endl;
+        std::cout << "5) About" << std::endl;
+        std::cout << "6) Salir" << std::endl;
         std::cout << "Seleccione una opción (1-6): ";
         std::cout << "\n_______________________________________________\n";
         std::cin >> option;
@@ -378,7 +457,7 @@ int main() {
                 alignSequences("GACATAC", "TATGACA");
                 break;
             case 2: {
-                std::string seqA, seqB;
+                std::string seqA, seqB; 
                 std::cout << "\n_______________________________________________\n";
                 std::cout << "            Escribe la secuencia A: ";
                 std::cout << "\n_______________________________________________\n";
