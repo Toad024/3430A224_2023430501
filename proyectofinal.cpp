@@ -81,41 +81,49 @@ void generateDotFileMatrix(const std::vector<std::vector<int>>& matrix, const st
     dotFile << "    node [fontname=\"Helvetica,Arial,sans-serif\"]" << std::endl;
     dotFile << "    edge [fontname=\"Helvetica,Arial,sans-serif\"]" << std::endl;
     dotFile << "    layout=dot" << std::endl;
-    dotFile << "    label=\"Matriz de Aineamiento Needleman-Wunsch\"" << std::endl;
+    dotFile << "    label=\"Matriz de Alineamiento Needleman-Wunsch\"" << std::endl;
     dotFile << "    labelloc = \"t\"" << std::endl;
     dotFile << "    node [shape=plaintext]" << std::endl;
 
-    // Imprimir nodos con las celdas de la matriz
+    // **1. Crear los nodos con los valores de la matriz**
     for (int i = 0; i < matrix.size(); ++i) {
         for (int j = 0; j < matrix[i].size(); ++j) {
-            dotFile << "    " << char('A' + i) << j << " [label=\"" << matrix[i][j] << "\"];" << std::endl;
-        }}
+            dotFile << "    nodo_" << i << "_" << j << " [label=\"" << matrix[i][j] << "\"];" << std::endl;
+        }
+    }
 
-    // Crear las aristas para conectar los nodos en el formato de la matriz (solo una vez)
+    // **2. Crear las conexiones (aristas) entre los nodos de la matriz**
     for (int i = 0; i < matrix.size(); ++i) {
         for (int j = 0; j < matrix[i].size(); ++j) {
+            // Conectar con el nodo a la derecha
             if (j + 1 < matrix[i].size()) {
-                dotFile << "    " << char('A' + i) << j << " -- " << char('A' + i) << (j + 1) << " [len=1.00];" << std::endl;
+                dotFile << "    nodo_" << i << "_" << j << " -- nodo_" << i << "_" << (j + 1) << " [len=1.00];" << std::endl;
             }
+            // Conectar con el nodo de abajo
             if (i + 1 < matrix.size()) {
-                dotFile << "    " << char('A' + i) << j << " -- " << char('A' + (i + 1)) << j << " [len=1.00];" << std::endl;
-            }}}
+                dotFile << "    nodo_" << i << "_" << j << " -- nodo_" << (i + 1) << "_" << j << " [len=1.00];" << std::endl;
+            }
+        }
+    }
 
-    // Agregar restricciones de rango para cada fila
+    // **3. Definir las restricciones de rango para cada fila (para asegurar que estén alineados)**
     for (int i = 0; i < matrix.size(); ++i) {
         dotFile << "    {rank=same;";
         for (int j = 0; j < matrix[i].size(); ++j) {
-            dotFile << char('A' + i) << j;
+            dotFile << " nodo_" << i << "_" << j;
             if (j < matrix[i].size() - 1) {
                 dotFile << ";";
             }
         }
-        dotFile << "};" << std::endl;
+        dotFile << " };" << std::endl;
     }
 
     dotFile << "}" << std::endl;
     dotFile.close();  
+
+    std::cout << "Archivo .dot generado con éxito: MatrizAlineada" << imageCountM << ".dot" << std::endl;
 }
+
 //SUBMENÚ - Opción 4: Función para generar la imagen .png de la Matriz Alineada 
 void generatePngImageMatrix(int imageCountM) {
     //Usamos el comando de sistema para ejecutar Graphviz y generar la imagen con un nombre único (Para poder crear varias imagenes sin que se solapen)
@@ -251,7 +259,7 @@ std::pair<std::string, std::string> reconstructAlignment(const std::vector<std::
         std::string segmentB = alignedB.substr(start, lineWidth);
 
         std::cout << "\n Secuencia A: " << segmentA;
-        std::cout << "\n Secuencia B: " << segmentB;
+        std::cout << "\n Secuencia B: " << segmentB << std::endl;
     }
 
     // Añadir este return al final
@@ -270,11 +278,10 @@ void subMenu(const std::vector<std::vector<int>>& matrix, const std::string& seq
         std::cout << "\n¿Qué acción desea realizar a continuación?: \n" << std::endl;
         std::cout << "1) Mostrar alineamiento óptimo" << std::endl;
         std::cout << "2) Destacar trazado diagonal" << std::endl;
-        std::cout << "3) Generar imagen .png de la Diagonal Trazada" << std::endl;
-        std::cout << "4) Generar imagen .png de la Matriz Alineada" << std::endl; // Nueva opción para generar archivo .dot
-        std::cout << "5) Generar imagen .png del Alineamiento Optimo" << std::endl;
+        std::cout << "3) Generar imagen de la Diagonal Trazada" << std::endl;
+        std::cout << "4) Generar imagen de la Matriz Alineada (300x300 max.)" << std::endl; // Nueva opción para generar archivo .dot
+        std::cout << "5) Generar imagen del Alineamiento Optimo" << std::endl;
         std::cout << "6) Volver al menú principal" << std::endl;
-        std::cout <<  "\n - ¡ADVERTENCIA! Las imagenes pueden verse distorsionadas si introduces secuencias demasiado largas - \n"  << std::endl;
         std::cout << "Seleccione una opción (1-6): ";
         std::cin >> subOption;
 
@@ -293,6 +300,9 @@ void subMenu(const std::vector<std::vector<int>>& matrix, const std::string& seq
                 break;
             }
             case 3: {
+                if (seqA.size() > 100 || seqB.size() > 100) {
+                std::cout << "\nADVERTENCIA: La imagen puede verse distorsionada debido al tamaño de las secuencias.\n" << std::endl;
+                }
                 // Generar el path de alineamiento
                 auto path = tracePath(matrix, seqA, seqB);
                 // Crear el archivo .dot
@@ -303,7 +313,12 @@ void subMenu(const std::vector<std::vector<int>>& matrix, const std::string& seq
                 imageCountD++;
                 break;
             }
-            case 4: {  //Generación de 
+            case 4: {  //Restricción para que solo genere la imagen si es de 500x500 como máximo.
+                if (seqA.size() > 400 || seqB.size() > 400) {
+                    std::cout << "\nERROR: No se puede generar la matriz porque excede el tamaño máximo permitido de 300x300.\n" << std::endl;
+                } else if (seqA.size() > 100 || seqB.size() > 100) { //Advertencia: se verá de baja calidad si son demasiado grandes las secuencias (+100 carácteres c/u)
+                    std::cout << "\nADVERTENCIA: La imagen puede verse de baja calidad debido al tamaño de las secuencias.\n" << std::endl;
+                }
                 // Crear archivo .dot
                 std::cout << "\nGenerando archivo .dot ..." << std::endl;
                 generateDotFileMatrix(matrix, tracePath(matrix, seqA, seqB), imageCountM);
@@ -315,10 +330,13 @@ void subMenu(const std::vector<std::vector<int>>& matrix, const std::string& seq
             case 5: {
                 // Llamar a reconstructAlignment para obtener el alineamiento óptimo
                 auto [alignedA, alignedB] = reconstructAlignment(matrix, seqA, seqB, -1);
-
-                // Generar archivos .dot y .png
+                 if (alignedA.size() > 100 || alignedB.size() > 100) {
+                    std::cout << "\nADVERTENCIA: La imagen puede verse distorsionada debido al tamaño de las secuencias." << std::endl;
+                }
+                // Generar archivo .dot
                 std::cout << "\nGenerando archivo .dot para Alineamiento Óptimo..." << std::endl;
                 generateDotFileAlignment(alignedA, alignedB, imageCountA);
+                //Crear Imagen 
                 generatePngImageAlignment(imageCountA);
                 imageCountA++;
                 break;
@@ -433,62 +451,64 @@ void openSequences() {
         std::cout << "Volviendo al menú principal..." << std::endl;
     }}
 
-//Menú principal
-int main() {
-    int option;
 
-    do {
-        std::cout << "_______________________________________________\n";
-        std::cout << "\n                 Menú Principal:\n";
-        std::cout << "_______________________________________________\n";
-        std::cout << "1) Secuencias de ejemplo" << std::endl;
-        std::cout << "2) Escribir secuencias" << std::endl;
-        std::cout << "3) Abrir secuencias" << std::endl;
-        std::cout << "4) Explicar algoritmo" << std::endl;
-        std::cout << "5) About" << std::endl;
-        std::cout << "6) Salir" << std::endl;
-        std::cout << "Seleccione una opción (1-6): ";
-        std::cout << "\n_______________________________________________\n";
-        std::cin >> option;
-        std::cout << "\n-_-_-_-_-_-_-_-_-_-_-_-_\n";
+int main(int argc, char* argv[]) { //-menu para ser ejecutado de manera correcta
+    if (argc == 2 && std::string(argv[1]) == "-menu") {
+        int option;
+        do { //Menú principal
+            std::cout << "_______________________________________________\n";
+            std::cout << "\n                 Menú Principal:\n";
+            std::cout << "_______________________________________________\n";
+            std::cout << "1) Secuencias de ejemplo" << std::endl;
+            std::cout << "2) Escribir secuencias" << std::endl;
+            std::cout << "3) Abrir secuencias" << std::endl;
+            std::cout << "4) Explicar algoritmo" << std::endl;
+            std::cout << "5) About" << std::endl;
+            std::cout << "6) Salir" << std::endl;
+            std::cout << "Seleccione una opción (1-6): ";
+            std::cout << "\n_______________________________________________\n";
+            std::cin >> option;
+            std::cout << "\n-_-_-_-_-_-_-_-_-_-_-_-_\n";
 
-        switch (option) {
-            case 1:
-                alignSequences("GACATAC", "TATGACA");
-                break;
-            case 2: {
-                std::string seqA, seqB; 
-                std::cout << "\n_______________________________________________\n";
-                std::cout << "            Escribe la secuencia A: ";
-                std::cout << "\n_______________________________________________\n";
-                std::cin >> seqA;
-                std::cout << "            Escribe la secuencia B: ";
-                std::cout << "\n_______________________________________________\n";
-                std::cin >> seqB;
-                std::cout << "\n_______________________________________________\n";
-                alignSequences(seqA, seqB);
-                break;
+            switch (option) {
+                case 1:
+                    alignSequences("GACATAC", "TATGACA");
+                    break;
+                case 2: {
+                    std::string seqA, seqB; 
+                    std::cout << "\n_______________________________________________\n";
+                    std::cout << "            Escribe la secuencia A: ";
+                    std::cout << "\n_______________________________________________\n";
+                    std::cin >> seqA;
+                    std::cout << "            Escribe la secuencia B: ";
+                    std::cout << "\n_______________________________________________\n";
+                    std::cin >> seqB;
+                    std::cout << "\n_______________________________________________\n";
+                    alignSequences(seqA, seqB);
+                    break;
+                }
+                case 3:
+                    openSequences();
+                    break;
+                case 4:
+                    std::cout << "\nEl algoritmo de Needleman-Wunsch es un enfoque de programación dinámica utilizado para realizar un alineamiento global de dos secuencias,\n" << 
+                    "(por ejemplo, secuencias de ADN, ARN o proteínas)" << ".\nEste algoritmo optimiza el proceso de encontrar el mejor alineamiento posible entre las dos secuencias," << 
+                    "\nconsiderando puntajes, penalizaciones por desajustes y gaps (espacios)." << std::endl;
+                    break;
+                case 5:
+                    std::cout << "\n    Programa desarrollado por Emilio Fernando Vásquez Millar.\n" << 
+                    "Este programa permite al usuario realizar alineamientos globales de secuencias biológicas de manera reducida y simplificada, visualizando las matrices de puntuación y el trazado del camino óptimo. \n" <<
+                    "Facilita la comparación de secuencias de ADN, ARN o proteínas, y es útil para estudios de similitud genética y evolución." << std::endl;
+                    break;
+                case 6:
+                    std::cout << "Saliendo del programa." << std::endl;
+                    return 0;
+                default:
+                    std::cout << "Opción no válida. Intenta de nuevo." << std::endl;
             }
-            case 3:
-                openSequences();
-                break;
-            case 4:
-                std::cout << "\nEl algoritmo de Needleman-Wunsch es un enfoque de programación dinámica utilizado para realizar un alineamiento global de dos secuencias,\n" << 
-                "(por ejemplo, secuencias de ADN, ARN o proteínas)" << ".\nEste algoritmo optimiza el proceso de encontrar el mejor alineamiento posible entre las dos secuencias," << 
-                "\nconsiderando puntajes, penalizaciones por desajustes y gaps (espacios)." << std::endl;
-                break;
-            case 5:
-                std::cout << "\n    Programa desarrollado por Emilio Fernando Vásquez Millar.\n" << 
-                "Este programa permite al usuario realizar alineamientos globales de secuencias biológicas de manera reducida y simplificada, visualizando las matrices de puntuación y el trazado del camino óptimo. \n" <<
-                "Facilita la comparación de secuencias de ADN, ARN o proteínas, y es útil para estudios de similitud genética y evolución." << std::endl;
-                break;
-            case 6:
-                std::cout << "Saliendo del programa." << std::endl;
-                break;
-            default:
-                std::cout << "Opción no válida. Intenta de nuevo." << std::endl;
-        }
-    } while (option != 6);
+        } while (true);
 
-    return 0;
-}
+    } else {        
+        std::cerr << "Opción no válida. \nPara desplegar el menú principal usa:'./nombre_programa -menu'" << std::endl;
+        return 1;
+    }}
